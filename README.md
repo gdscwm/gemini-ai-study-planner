@@ -20,27 +20,22 @@ You’ll learn to create a complete system with a simple web UI built with **Fla
 
 [Understanding AI Agents](#understanding-ai-agents)
 
-[What are AI Agents? How many types are there?](#what-are-ai-agents-how-many-types-are-there)
+- [What are AI Agents? How many types are there?](#what-are-ai-agents-how-many-types-are-there)
 
-[How AI Agents is unique compared to other AI tools?](#how-are-ai-agents-unique-compared-to-other-ai-tools)
+- [How AI Agents is unique compared to other AI tools?](#how-are-ai-agents-unique-compared-to-other-ai-tools)
 
-[How to Set Up Your Environment](#how-to-set-up-your-environment)
+- [How to Set Up Your Environment](#how-to-set-up-your-environment)
+- 
+  - [1. Create a Project Directory](#1-create-a-project-directory)
+  - [2. Create a Virtual Environment](#2-create-a-virtual-environment)
+  - [3. Install Dependencies](#3-install-dependencies)
+  - [4. Get Your Gemini API Key](#4-get-your-gemini-api-key)
+  - [5. Add Your Key to the .env File](#5-add-your-key-to-the-env-file)
 
-[1. Create a Project Directory](#1-create-a-project-directory)
+- [How to Build the Real-Time Agent Logic](#how-to-build-the-real-time-agent-logic)
 
-[2. Create a Virtual Environment](#2-create-a-virtual-environment)
-
-[3. Install Dependencies](#3-install-dependencies)
-
-[4. Get Your Gemini API Key](#4-get-your-gemini-api-key)
-
-[5. Add Your Key to the .env File](#5-add-your-key-to-the-env-file)
-
-[How to Build the Real-Time Agent Logic](#how-to-build-the-real-time-agent-logic)
-
-[Create the Gemini Client (with web search)](#create-the-gemini-client-with-web-search)
-
-[Create the Flask Backend and Frontend](#create-the-flask-backend-and-frontend)
+  - [Create the Gemini Client (with web search)](#create-the-gemini-client-with-web-search)
+  - [Create the Flask Backend and Frontend](#create-the-flask-backend-and-frontend)
 
 [How to Test the AI Agent](#how-to-test-the-ai-agent)
 
@@ -52,31 +47,31 @@ You’ll learn to create a complete system with a simple web UI built with **Fla
 
 Before following this tutorial, you should have:
 
-- Python 3+ is installed on your machine
+- Python 3+ is [installed on your machine](https://www.python.org/downloads/)
 
-- Installed VS Code or another IDE of your choice
+- Installed [VS Code](https://code.visualstudio.com/download) or another IDE of your choice
 
 ## Tools You'll Be Using to Build this Agent
 
 To build this study planner agent, you'll need a few components:
 
-- Google Gemini API: This is the core AI service that provides the 
+- **Google Gemini API:** This is the core AI service that provides the 
 generative model. It allows our agent to understand natural language, 
 reason, and generate human-like responses.
 
-- Flask: This is a lightweight web framework for Python. We’ll use it to 
+- **Flask:** This is a lightweight web framework for Python. We’ll use it to 
 create our web server (that is, the backend). Its primary purpose here is 
 to handle web requests from the user's browser, process them, and send 
 back a response.
 
-- Tailwind CSS: This is a CSS framework for building the user interface 
+- **Tailwind CSS:** This is a CSS framework for building the user interface 
 (that is, the frontend). Instead of writing custom CSS, you use 
 pre-defined classes like bg-blue-300, m-4, and so on, to style the page 
 directly in your HTML.
 
-- Python-dotenv: This library helps us manage environment variables.
+- **Python-dotenv:** This library helps us manage environment variables.
 
-- DuckDuckGo Search: This library provides a simple way to perform real-time 
+- **DuckDuckGo Search:** This library provides a simple way to perform real-time 
 web searches. It acts as the "tool" for our AI agent. When a user asks a 
 question that requires external information, our agent can use this tool 
 to find relevant resources on the web and use that information to 
@@ -96,15 +91,15 @@ reason and adapt.
 
 There are a few different types of agents, including:
 
-- Simple Reflex (acts on current input, like a thermostat)
+- **Simple Reflex** (acts on current input, like a thermostat)
 
-- Model-Based (uses an internal map, like robot vacuums)
+- **Model-Based** (uses an internal map, like robot vacuums)
 
-- Goal-Based (plans to reach goals, like a study planner)
+- **Goal-Based** (plans to reach goals, like a study planner)
 
-- Utility-Based (chooses best outcomes, like trading bots)
+- **Utility-Based** (chooses best outcomes, like trading bots)
 
-Learning Agents (improve over time, like recommendation systems).
+- **Learning Agents** (improve over time, like recommendation systems).
 
 ### How Are AI Agents Unique Compared to Other AI Tools?
 
@@ -112,24 +107,24 @@ AI agents use technologies like LLMs, but they’re distinct because of
 their autonomy and ability to act. Let’s understand these different types 
 of AI tools in more detail:
 
-- Large Language Models (LLMs): LLMs are the brain of the operation. They’re 
+- **Large Language Models (LLMs):** LLMs are the brain of the operation. They’re 
 trained on a very large dataset to understand and process user queries in 
 natural language to generate human-like output. OpenAI’s GPT, Google’s 
 Gemini, and Anthropic’s Claude are all examples of LLMs.
 
-- Retrieval-Augmented Generation (RAG): RAG is a process or a technique that 
+- **Retrieval-Augmented Generation (RAG):** RAG is a process or a technique that 
 allows LLMs to not only get their information from training data but also 
 from external sources, like a database or document library, to answer user 
 queries. While RAG retrieves information, it doesn't independently decide 
 to perform an action or plan a sequence of steps to achieve a goal.
 
-- AI Agents: As explained above, agents are the systems that can perform 
+- **AI Agents:** As explained above, agents are the systems that can perform 
 user tasks using LLMs as their core reasoning engine. An agent’s full 
 architecture allows it to perceive its environment, plan, act, and learn 
 (memory, based on past interactions).
 
-In this tutorial, you are going to use an LLM (Gemini) to reason, as well 
-as a web search engine, DuckDuckGo search, for building the agent. So, now 
+In this tutorial, you are going to use an **LLM** (**Gemini**) to reason, as well 
+as a **web search engine** (**DuckDuckGo search**), for building the agent. So, now 
 let’s move on to the next step.
 
 ## How to Set Up Your Environment
@@ -624,15 +619,15 @@ agent for yourself!
 
 Try out asking normal questions like:
 
-“Make me a 3-week plan to learn Java programming for beginners.”
+- “Make me a 3-week plan to learn Java programming for beginners.”
 
-“Provide me a quiz on AI agents development?”
+- “Provide me a quiz on AI agents development?”
 
 Or you can also trigger a web search like:
 
-```search: resources for java```
+- ```search: resources for java```
 
-```/search how to prepare frontend coding interviews```
+- ```/search how to prepare frontend coding interviews```
 
 When you use the search prefix like above, the agent fetches a handful of 
 links and asks Gemini to synthesize them with short inline citations like 
@@ -654,6 +649,6 @@ sophisticated AI agents tailored to your specific needs. From here, you can furt
 
 ## Acknowledgments
 
-Thanks to Tarun Singh FreeCodeCamp for providing the template to this workshop [here](https://www.freecodecamp.org/news/how-to-build-an-ai-study-planner-agent-using-gemini-in-python/)!
+Thanks to Tarun Singh and FreeCodeCamp for providing the template to this workshop [here](https://www.freecodecamp.org/news/how-to-build-an-ai-study-planner-agent-using-gemini-in-python/)!
 
 You can visit the original project repo here.
