@@ -650,5 +650,3 @@ sophisticated AI agents tailored to your specific needs. From here, you can furt
 ## Acknowledgments
 
 Thanks to Tarun Singh and FreeCodeCamp for providing the template to this workshop [here](https://www.freecodecamp.org/news/how-to-build-an-ai-study-planner-agent-using-gemini-in-python/)!
-
-You can visit the original project repo here.
