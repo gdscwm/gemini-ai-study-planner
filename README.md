@@ -177,19 +177,18 @@ planner agent, and they include:
 
 ```duckduckgo-search: real web search```
 
-You can install them with a single command:
+You can install them in your virtual environment with a single command:
 
-```pip install flask google-generativeai python-dotenv requests duckduckgo-search```
+```pipx install flask google-generativeai python-dotenv requests duckduckgo-search```
 
 ### 4. Get Your Gemini API Key
 
-Go to Google AI Studio and create a new account (if you don’t have one 
+[Go to Google AI Studio](https://aistudio.google.com/) and create a new account (if you don’t have one 
 already).
 
 #### Google AI Studio Landing Page
 
-Next, get yourself a new API key by clicking the Create API Key from the 
-API Keys section.
+Next, [get yourself a new API key](https://aistudio.google.com/app/apikey) by clicking the Create API Key from the API Keys section.
 
 ![Google AI Studio Landing Page](image-1.png)
 
@@ -217,7 +216,8 @@ to generate a response. This is how we give the agent memory.
 
 ### Create the Gemini Client (with web search)
 
-Create a new file at ```backend/gemini_client.py```:
+Create a new backend folder inside the ```study-planner``` directory, and
+add a new file at ```backend/gemini_client.py```:
 
 ```
 # backend/gemini_client.py
@@ -334,36 +334,36 @@ Let’s understand what’s going on in the above code:
 
 The ```perform_web_search()``` function:
 
-We keep a chat session open so the model remembers the conversation.
+- We keep a chat session open so the model remembers the conversation.
 
-If a message starts with search: or /search, the DuckDuckGo service is 
+- If a message starts with search: or /search, the DuckDuckGo service is 
 called, gathers a few results, and passes them to Gemini with a short 
 instruction to cite sources.
 
-Otherwise, we just send the message as normal.
+- Otherwise, we just send the message as normal.
 
 The ```GeminiClient``` class:
 
-The ```GeminiClient``` class is designed to connect and talk with Google’s 
+- The ```GeminiClient``` class is designed to connect and talk with Google’s 
 Gemini AI. Inside the ```__init__``` method, it first calls ```genai.configure()```
 with the API key from the environment variables, which basically unlocks 
 access to Gemini’s services.
 
-Then, ```self.model = genai.GenerativeModel('gemini-1.5-flash')``` loads the 
+- Then, ```self.model = genai.GenerativeModel('gemini-1.5-flash')``` loads the 
 specific Gemini model, and s```elf.chat = self.model.start_chat(history=[])```
 starts a new conversation with no previous history. This way, the class is 
 ready to send and receive AI responses.
 
-The real action happens in ```generate_response()```. If a user’s message begins 
+- The real action happens in ```generate_response()```. If a user’s message begins 
 with ```search:``` or ```/search```, it triggers a DuckDuckGo search using 
 ```perform_web_search()```.
 
-The results are formatted with titles, links, and snippets, and then 
+- The results are formatted with titles, links, and snippets, and then 
 passed to Gemini to create a clear, cited answer (you can sanitize the 
 incoming data later by using any package in Python to make it more 
 user-friendly in the frontend).
 
-If no search command is used, it simply chats with Gemini using the given 
+- If no search command is used, it simply chats with Gemini using the given 
 input. Error handling is built in, so instead of breaking, it returns a 
 general safe message.
 
@@ -374,8 +374,7 @@ simple web interface.
 
 **The Flask Backend**
 
-Create a new backend folder inside the ```study-planner``` directory, and add a 
-new file ```app.py```:
+Create a new file inside the ```backend``` folder and name it ```app.py```:
 
 ```
 # backend/app.py
@@ -409,11 +408,11 @@ if __name__ == '__main__':
 
 What it does:
 
-```@app.route('/')```: This is the homepage. When a user navigates to the main 
+- ```@app.route('/')```: This is the homepage. When a user navigates to the main 
 URL, like, http://localhost:5000), Flask runs the ```index()``` function, which  simply renders the ```index.html``` file. This serves the entire user interface to the browser useful when you don’t want to use the command line 
 interface.
 
-Next, we have created ```@app.route('/api/chat', methods=['POST'])```, the API 
+- ```@app.route('/api/chat', methods=['POST'])```: This is the API 
 endpoint. When the user clicks "Send" on the frontend, the JavaScript 
 sends a ```POST``` request to this URL. The ```chat()``` function then receives the 
 user's message, passes it to the ```GeminiClient``` to get a response, and then 
@@ -421,7 +420,7 @@ sends that response back to the frontend as a JSON object.
 
 **The Flask Frontend**
 
-Create a new folder named templates in your project's root directory. 
+Create a new folder named ```templates``` in your project's root directory. 
 Inside it, create a file ```index.html```.
 
 ```HTML
