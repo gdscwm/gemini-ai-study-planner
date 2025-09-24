@@ -308,10 +308,11 @@ Please try again."
                 refs_block = "\n\n".join(refs_lines)
 
                 system_prompt = (
-                    "You are an AI research assistant. Use the provided 
-web search results to answer the user query. "
-                    "Synthesize concisely, cite sources inline like [1], 
-[2] where relevant, and include a brief summary."
+                    "You are an AI research assistant. Use the provided web search results to answer the user query. "
+                    "Synthesize concisely, cite sources inline like [1], [2] where relevant, and include a brief summary."
+                    "Use section headers for structure. Use numbered lists for steps, bullet points for lists, and tables for comparisons. "
+                    "Cite sources inline with [1], [2] as necessary. Always start with a summary sentence, followed by clear sections."
+
                 )
                 composed = (
                     f"<system>\n{system_prompt}\n</system>\n"
@@ -421,7 +422,200 @@ sends that response back to the frontend as a JSON object.
 **The Flask Frontend**
 
 Create a new folder named ```templates``` in your project's root directory. 
-Inside it, create a file ```index.html```.
+Inside the ```templates``` folder, create a file ```index.html```.
+
+```
+touch templates/index.html
+```
+
+### Step 1: Add HTML Boilerplate with Tailwind CSS
+
+Open `templates/index.html` and add the following content:
+
+```HTML
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Study Planner</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      body {
+        background-color: #f3f4f6;
+      }
+
+      .chat-container {
+        max-width: 768px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .typing-indicator {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        color: #6b7280;
+      }
+
+      .typing-dot {
+        width: 8px;
+        height: 8px;
+        margin: 0 2px;
+        background-color: #6b7280;
+        border-radius: 50%;
+        animation: typing 1s infinite ease-in-out;
+      }
+
+      .message-bubble {
+        padding: 1rem;
+        border-radius: 1.5rem;
+        max-width: 80%;
+        margin-bottom: 1rem;
+      }
+
+      .user-message {
+        background-color: #3b82f6;
+        color: white;
+        align-self: flex-end;
+      }
+
+      .agent-message {
+        background-color: #e5e7eb;
+        color: #374151;
+        align-self: flex-start;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <!-- Chat UI goes here -->
+    </div>
+  </body>
+</html>
+```
+
+### Step 2: Add the Body Structure
+
+Continuing in `index.html`, add the chat container HTML inside the `<body>`:
+
+```HTML
+...
+<body class="bg-gray-100">
+  <div class="chat-container">
+    <header
+      class="bg-white shadow-sm p-4 text-center font-bold text-xl text-gray-800"
+    >
+      AI Study Planner
+    </header>
+
+    <main id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <div class="message-bubble agent-message">
+        Hello! I'm your AI Study Planner. What topic would you like to study today?
+      </div>
+    </main>
+
+    <footer class="bg-white p-4">
+      <div class="flex items-center">
+        <input
+          type="text"
+          id="user-input"
+          class="flex-1 p-3 border-2 border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
+          placeholder="Type your message..."
+        />
+        <button
+          id="send-btn"
+          class="ml-4 px-6 py-3 bg-blue-500 text-white rounded-full font-semibold hover:bg-blue-600 transition-colors"
+        >
+          Send
+        </button>
+      </div>
+    </footer>
+  </div>
+```
+
+### Step 3: Add JavaScript for Chat Interaction
+
+At the end of the body, add the script that handles sending and receiving messages:
+
+```HTML
+    ...
+    <script>
+      const chatHistory = document.getElementById("chat-history");
+      const userInput = document.getElementById("user-input");
+      const sendBtn = document.getElementById("send-btn");
+
+      function addMessage(sender, text) {
+        const messageElement = document.createElement("div");
+        messageElement.classList.add(
+          "message-bubble",
+          sender === "user" ? "user-message" : "agent-message"
+        );
+        messageElement.textContent = text;
+        chatHistory.appendChild(messageElement);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+      }
+
+      async function sendMessage() {
+        const message = userInput.value.trim();
+        if (message === "") return;
+
+        addMessage("user", message);
+        userInput.value = "";
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message: message }),
+          });
+
+          const data = await response.json();
+          if (data.response) {
+            addMessage("agent", data.response);
+          } else if (data.error) {
+            addMessage("agent", `Error: ${data.error}`);
+          } else {
+            addMessage("agent", "Unexpected response from server.");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          addMessage("agent", "Sorry, something went wrong. Please try again.");
+        }
+      }
+
+      sendBtn.addEventListener("click", sendMessage);
+      userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          sendMessage();
+        }
+      });
+    </script>
+  </body>
+</html>
+```
+
+### How It Works
+
+When the user types a message and hits Send, the following occurs:
+
+- The message is taken from the input field.
+
+- A new user-message bubble is created and displayed.
+
+- The message is sent to the backend API `/api/chat` using the `fetch()` API.
+
+- The frontend waits for the backend's response.
+
+- Once received, a new agent-message bubble is created to display the AI's reply.
+
+This simple one-page UI lets users chat with the AI Study Planner easily. **Check to make sure your HTML matches the final product:***
 
 ```HTML
 <!DOCTYPE html>
