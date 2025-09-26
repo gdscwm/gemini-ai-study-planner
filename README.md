@@ -183,6 +183,8 @@ You can install them in your virtual environment with a single command:
 
 ### 4. Get Your Gemini API Key
 
+Google AI Studio allows you to try out Gemini's massive token context window, grab an API key in seconds, and experiment on prebuilt prompts.  
+
 [Go to Google AI Studio](https://aistudio.google.com/) and create a new account (if you don’t have one 
 already).
 
