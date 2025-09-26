@@ -218,8 +218,7 @@ to generate a response. This is how we give the agent memory.
 
 ### Create the Gemini Client (with web search)
 
-Create a new backend folder inside the ```study-planner``` directory, and
-add a new file at ```backend/gemini_client.py```:
+Create a new folder named ```backend``` from inside the ```study-planner``` directory. Then, add a new file at ```backend/gemini_client.py```:
 
 ```
 # backend/gemini_client.py
@@ -231,7 +230,11 @@ from duckduckgo_search import DDGS
 
 # Load environment variables
 load_dotenv()
+```
 
+Name your first function `perform_web_search` and follow this example below:
+
+```
 # function uses a query string and duckduckgo_search library to perform a 
 web search
 def perform_web_search(query: str, max_results: int = 6) -> List[Dict[str, 
@@ -260,7 +263,22 @@ str]]:
     except Exception as e:
         print(f"DuckDuckGo search error: {e}")
         return []
+```
 
+**What the ```perform_web_search()``` function does:**
+
+- We keep a chat session open so the model remembers the conversation.
+
+- If a message starts with search: or /search, the DuckDuckGo service is 
+called, gathers a few results, and passes them to Gemini with a short 
+instruction to cite sources.
+
+- Otherwise, we just send the message as normal.
+
+
+Next, build out the `GeminiClient` class following the example below:
+
+```
 # A class that manages the interaction with the Gemini API and core agent 
 logic 
 class GeminiClient:
@@ -333,19 +351,7 @@ Please try again."
 request."
 ```
 
-Let’s understand what’s going on in the above code:
-
-The ```perform_web_search()``` function:
-
-- We keep a chat session open so the model remembers the conversation.
-
-- If a message starts with search: or /search, the DuckDuckGo service is 
-called, gathers a few results, and passes them to Gemini with a short 
-instruction to cite sources.
-
-- Otherwise, we just send the message as normal.
-
-The ```GeminiClient``` class:
+**What the ```GeminiClient``` class does:**
 
 - The ```GeminiClient``` class is designed to connect and talk with Google’s 
 Gemini AI. Inside the ```__init__``` method, it first calls ```genai.configure()```
@@ -370,12 +376,122 @@ user-friendly in the frontend).
 input. Error handling is built in, so instead of breaking, it returns a 
 general safe message.
 
+**Check to make sure your Python matches the final product:***
+
+```
+# backend/gemini_client.py
+import os
+from typing import List, Dict
+import google.generativeai as genai
+from dotenv import load_dotenv
+from duckduckgo_search import DDGS
+
+# Load environment variables
+load_dotenv()
+
+def perform_web_search(query: str, max_results: int = 6) -> List[Dict[str, 
+str]]:
+    """Perform a DuckDuckGo search and return a list of results.
+
+    Each result contains: title, href, body.
+    """
+    results: List[Dict[str, str]] = []
+    try:
+        with DDGS() as ddgs:
+            for result in ddgs.text(query, max_results=max_results):
+                # result keys typically include: title, href, body
+                if not isinstance(result, dict):
+                    continue
+                title = result.get('title') or ''
+                href = result.get('href') or ''
+                body = result.get('body') or ''
+                if title and href:
+                    results.append({
+                        'title': title,
+                        'href': href,
+                        'body': body,
+                    })
+        return results
+    except Exception as e:
+        print(f"DuckDuckGo search error: {e}")
+        return []
+
+class GeminiClient:
+    def __init__(self):
+        try:
+            genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
+            self.chat = self.model.start_chat(history=[])
+        except Exception as e:
+            print(f"Error configuring Gemini API: {e}")
+            self.chat = None
+
+    def generate_response(self, user_input: str) -> str:
+        """Generate an AI response with optional web search when prefixed.
+
+        To trigger web search, start your message with one of:
+        - "search: <query>"
+        - "/search <query>"
+        Otherwise, the model responds directly using chat history.
+        """
+        if not self.chat:
+            return "AI service is not configured correctly."
+
+        try:
+            text = user_input or ""
+            lower = text.strip().lower()
+
+            # Search trigger
+            search_query = None
+            if lower.startswith("search:"):
+                search_query = text.split(":", 1)[1].strip()
+            elif lower.startswith("/search "):
+                search_query = text.split(" ", 1)[1].strip()
+
+            if search_query:
+                web_results = perform_web_search(search_query, 
+max_results=6)
+                if not web_results:
+                    return "I could not retrieve web results right now. 
+Please try again."
+
+                # Build context with numbered references
+                refs_lines = []
+                for idx, item in enumerate(web_results, start=1):
+                    refs_lines.append(f"[{idx}] {item['title']} — 
+{item['href']}\n{item['body']}")
+                refs_block = "\n\n".join(refs_lines)
+
+                system_prompt = (
+                    "You are an AI research assistant. Use the provided web search results to answer the user query. "
+                    "Synthesize concisely, cite sources inline like [1], [2] where relevant, and include a brief summary."
+                    "Use section headers for structure. Use numbered lists for steps, bullet points for lists, and tables for comparisons. "
+                    "Cite sources inline with [1], [2] as necessary. Always start with a summary sentence, followed by clear sections."
+
+                )
+                composed = (
+                    f"<system>\n{system_prompt}\n</system>\n"
+                    f"<user_query>\n{search_query}\n</user_query>\n"
+                    f"<web_results>\n{refs_block}\n</web_results>"
+                )
+                response = self.chat.send_message(composed)
+                return response.text
+
+            # Default: normal chat
+            response = self.chat.send_message(text)
+            return response.text
+        except Exception as e:
+            print(f"Error generating response: {e}")
+            return "I'm sorry, I encountered an error processing your 
+request."
+```
+
 ## Create the Flask Backend and Frontend
 
 Next, we'll set up the Flask web server to connect our agent logic to a 
 simple web interface.
 
-**The Flask Backend**
+### The Flask Backend
 
 Create a new file inside the ```backend``` folder and name it ```app.py```:
 
@@ -409,7 +525,7 @@ if __name__ == '__main__':
     app.run(debug=True)
 ```
 
-What it does:
+**What ```app.py``` does:**
 
 - ```@app.route('/')```: This is the homepage. When a user navigates to the main 
 URL, like, http://localhost:5000), Flask runs the ```index()``` function, which  simply renders the ```index.html``` file. This serves the entire user interface to the browser useful when you don’t want to use the command line 
@@ -421,7 +537,7 @@ sends a ```POST``` request to this URL. The ```chat()``` function then receives 
 user's message, passes it to the ```GeminiClient``` to get a response, and then 
 sends that response back to the frontend as a JSON object.
 
-**The Flask Frontend**
+### The Flask Frontend
 
 Create a new folder named ```templates``` in your project's root directory. 
 Inside the ```templates``` folder, create a file ```index.html```.
@@ -430,7 +546,7 @@ Inside the ```templates``` folder, create a file ```index.html```.
 touch templates/index.html
 ```
 
-### Step 1: Add HTML Boilerplate with Tailwind CSS
+#### Step 1: Add HTML Boilerplate with Tailwind CSS
 
 Open `templates/index.html` and add the following content:
 
@@ -501,7 +617,7 @@ Open `templates/index.html` and add the following content:
 </html>
 ```
 
-### Step 2: Add the Body Structure
+#### Step 2: Add the Body Structure
 
 Continuing in `index.html`, add the chat container HTML inside the `<body>`:
 
@@ -540,7 +656,7 @@ Continuing in `index.html`, add the chat container HTML inside the `<body>`:
   </div>
 ```
 
-### Step 3: Add JavaScript for Chat Interaction
+#### Step 3: Add JavaScript for Chat Interaction
 
 At the end of the body, add the script that handles sending and receiving messages:
 
@@ -617,7 +733,9 @@ When the user types a message and hits Send, the following occurs:
 
 - Once received, a new agent-message bubble is created to display the AI's reply.
 
-This simple one-page UI lets users chat with the AI Study Planner easily. **Check to make sure your HTML matches the final product:***
+This simple one-page UI lets users chat with the AI Study Planner easily. 
+
+**Check to make sure your HTML matches the final product:***
 
 ```HTML
 <!DOCTYPE html>
